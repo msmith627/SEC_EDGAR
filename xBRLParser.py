@@ -19,9 +19,9 @@ headers_txt = {
 # details on issuer, file type and date of document.
 cik = '0000051143' # cik for International business machines corp (IBM)
 type = '10-K' # annual filing
-dateb = '20160101' # 2016
+dateb = '20231231' # 2016
 
-# obtain HTML for search page
+# base URL for company filings search
 base_url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={}&type={}&dateb={}"
 format_url = base_url.format(cik, type, dateb)
 # use requests .get method
@@ -37,13 +37,16 @@ rows = table_tag.find_all('tr')
 print(table_tag)
 print ("done")
 
+doc_link_list = []
+
 for row in rows :
     cells = row.find_all('td')
     if len(cells) > 3 :
-        if '2015' in cells[3].text :
+        if cells[3].text > '2015-01-01':
         #if '10-k' in cells[1].text :
             doc_link = 'https://www.sec.gov' + cells[1].a['href']
-print(doc_link)
+            doc_link_list.append(doc_link)
+print(doc_link_list)
 
 # filingURL = 'https://www.sec.gov/Archives/edgar/data/1730346/000173034623000030/0001730346-23-000030-index.htm'
 # doc_link = filingURL
@@ -53,30 +56,36 @@ if doc_link == '' :
     print("Couldn't find the document link")
     sys.exit()
 
-# Obtain HTML for document page
-print(f'DOC Link : {doc_link}')
-doc_resp = requests.get(doc_link, headers=headers_txt)
-doc_str = doc_resp.text
+for i in doc_link_list:
 
-# Find the XBRL link
-xbrl_link = ''
-soup = BeautifulSoup(doc_str, 'html.parser')
-table_tag = soup.find('table', class_='tableFile', summary='Data Files')
-rows = table_tag.find_all('tr')
-for row in rows :
-    cells = row.find_all('td')
-    if len(cells) > 3 :
-        if 'INS' in cells[3].text :
-            xbrl_link = 'https://www.sec.gov' + cells[2].a['href']
+    # Obtain HTML for document page
+    print(f'DOC Link : {i}')
+    doc_resp = requests.get(i, headers=headers_txt)
+    doc_str = doc_resp.text
 
-# Obtain XBRL text from document
-print(f'XBRL Link : {xbrl_link}')
-xbrl_resp = requests.get(xbrl_link, headers=headers_txt)
-xbrl_str = xbrl_resp.text
+    # Find the XBRL link
+    xbrl_link = ''
+    soup = BeautifulSoup(doc_str, 'html.parser')
+    table_tag = soup.find('table', class_='tableFile', summary='Data Files')
+    rows = table_tag.find_all('tr')
+    for row in rows :
+        cells = row.find_all('td')
+        if len(cells) > 3:
+            if 'INS' in cells[1].text:
+                xbrl_link = 'https://www.sec.gov' + cells[2].a['href']
+                print(xbrl_link)
 
-# Find and print stockholder's equity
-soup = BeautifulSoup(xbrl_str, 'lxml')
-tag_list = soup.find_all()
+
+
+    # Obtain XBRL text from document
+    print(f'XBRL Link : {xbrl_link}')
+    xbrl_resp = requests.get(xbrl_link, headers=headers_txt)
+    xbrl_str = xbrl_resp.text
+
+
+    # Find and print stockholder's equity
+    soup = BeautifulSoup(xbrl_str, 'lxml')
+    tag_list = soup.find_all()
 
 # This section of code creates a context table.
 # The context table is a dictionary of context names keys that reference dictionary values
@@ -85,46 +94,58 @@ tag_list = soup.find_all()
 # contains the instant date of the context. All entries include a date and dateType value.
 # For contexts with datetype of period, the date is equal to the enddate of the context.
 
-contexts = {}
+    contexts = {}
 
-for tag in tag_list:
-    if tag.name == 'xbrli:context':
+    for tag in tag_list:
+        if 'xbrli' in tag.name or 'context' in tag.name:
+        # if tag.name == 'xbrli:context' or tag.name =='context':
 
-        # This section of code finds the start date of the context if it exists.
-        start_date_tag = tag.find(name='xbrli:startdate')
-        if start_date_tag == None :
-            start_date = None
-        else :
-            start_date = start_date_tag.text
+            # This section of code finds the start date of the context if it exists.
+            start_date_tag = tag.find(name='xbrli:startdate') or tag.find(name='period')
+            if start_date_tag == None :
+                start_date = 'None'
+            else :
+                start_date = start_date_tag.text
 
-        # This section of code finds the end date of the context if it exists.
-        end_date_tag = tag.find(name='xbrli:enddate')
-        if end_date_tag == None :
-            end_date = None
-        else :
-            end_date = end_date_tag.text
-            date = end_date_tag.text
-            datetype = 'period'
+            # This section of code finds the end date of the context if it exists.
+            end_date_tag = tag.find(name='xbrli:enddate')
+            if end_date_tag == None :
+                end_date = None
+                date = 'None'
+                datetype = 'None'
+            else :
+                end_date = end_date_tag.text
+                date = end_date_tag.text
+                datetype = 'period'
 
-        # This section of code finds the instant date of the context if it exists.
-        instant_date_tag = tag.find(name='xbrli:instant')
-        if instant_date_tag != None :
-            date = instant_date_tag.text
-            datetype = 'instant'
+            # This section of code finds the instant date of the context if it exists.
+            instant_date_tag = tag.find(name='xbrli:instant') or tag.find(name='instant')
+            if instant_date_tag != None :
+                date = instant_date_tag.text
+                datetype = 'instant'
 
-        # build a dictionary of date information within a dictionary of context titles
-        dtinfo = {'date' : date, 'year' : date[0 :4], 'datetype' : datetype, 'startdate' : start_date,
-                'enddate' : end_date}
-        contexts[tag.attrs['id']] = dtinfo
-        tag_attrs_id=tag.attrs['id']
-        print(f'tag_attrs[id] : {tag_attrs_id}')
+            # build a dictionary of date information within a dictionary of context titles
+            dtinfo = {'date' : date, 'year' : date[0 :4], 'datetype' : datetype, 'startdate' : start_date,
+                    'enddate' : end_date}
+            try:
+                contexts[tag.attrs['id']] = dtinfo;
+                tag_attrs_id=tag.attrs['id'];
+            except KeyError:
+                pass
+            # except NameError:
+            #     pass
 
-# Find and print stockholder's equity
-for tag in tag_list :
-    if tag.name == 'us-gaap:stockholdersequity' :
-        year = contexts[tag.attrs['contextref']]['year']
-        contextref_txt=tag.attrs['contextref']
-        print(f'tag_attrs[contextref] : {contextref_txt}')
-        context_out=contexts[tag.attrs['contextref']]
-        print(f'contexts[tag.attrs[contextref] : {context_out}')
-        print(year + " Stockholder's equity: " + tag.text)
+            print(f'tag_attrs[id] : {tag_attrs_id}')
+
+    # Find and print stockholder's equity
+    for tag in tag_list :
+        if tag.name == 'us-gaap:stockholdersequity' :
+            try:
+                year = contexts[tag.attrs['contextref']]['year']
+                contextref_txt=tag.attrs['contextref']
+                print(f'tag_attrs[contextref] : {contextref_txt}')
+                context_out=contexts[tag.attrs['contextref']]
+                print(f'contexts[tag.attrs[contextref] : {context_out}')
+                print(year + " Stockholder's equity: " + tag.text)
+            except KeyError:
+                pass
