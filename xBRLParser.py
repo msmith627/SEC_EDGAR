@@ -85,7 +85,7 @@ for i in doc_link_list:
 
     # Find and print stockholder's equity
     soup = BeautifulSoup(xbrl_str, 'lxml')
-    tag_list = soup.find_all()
+    tag_list = soup.find_all(name='xbrli:context')
 
 # This section of code creates a context table.
 # The context table is a dictionary of context names keys that reference dictionary values
@@ -127,15 +127,18 @@ for i in doc_link_list:
             # build a dictionary of date information within a dictionary of context titles
             dtinfo = {'date' : date, 'year' : date[0 :4], 'datetype' : datetype, 'startdate' : start_date,
                     'enddate' : end_date}
-            try:
-                contexts[tag.attrs['id']] = dtinfo;
-                tag_attrs_id=tag.attrs['id'];
-            except KeyError:
-                pass
-            # except NameError:
-            #     pass
 
-            print(f'tag_attrs[id] : {tag_attrs_id}')
+            if tag.find(name='xbrli:context'):
+                try:
+                    contexts[tag.attrs['id']] = dtinfo;
+                    tag_attrs_id=tag.attrs['id'];
+                    print(f'tag_attrs[id] : {tag_attrs_id}')
+                except KeyError:
+                    pass
+                except NameError:
+                    pass
+
+                    # print(f'tag_attrs[id] : {tag_attrs_id}')
 
     # Find and print stockholder's equity
     for tag in tag_list :
