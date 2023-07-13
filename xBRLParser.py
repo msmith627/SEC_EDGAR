@@ -128,7 +128,7 @@ for i in doc_link_list:
             dtinfo = {'date' : date, 'year' : date[0 :4], 'datetype' : datetype, 'startdate' : start_date,
                     'enddate' : end_date}
 
-            if tag.find(name='xbrli:context'):
+            if tag.find(name='xbrli:entity'):
                 try:
                     contexts[tag.attrs['id']] = dtinfo;
                     tag_attrs_id=tag.attrs['id'];
