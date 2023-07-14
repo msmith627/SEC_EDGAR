@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 import requests
 import sys
 import warnings
+import json
+import xmltojson
 warnings.filterwarnings("ignore")
 
 # set header parameters required by sec request
@@ -95,10 +97,25 @@ for i in doc_link_list:
 # For contexts with datetype of period, the date is equal to the enddate of the context.
 
     contexts = {}
+    tag_list_root = '<root>' + str(tag_list) + '</root>'
+
+
+    #
+    with open("Contexts.html", "w") as html_file:
+        html_file.write(str(tag_list_root))
+
+    with open("Contexts.html", "r") as html_file:
+        html = html_file.read()
+        jsonstr = xmltojson.parse(html)
+    # jsonstr = xmltojson.parse(tag_list)
+
+    print(jsonstr)
 
     for tag in tag_list:
         if 'xbrli' in tag.name or 'context' in tag.name:
         # if tag.name == 'xbrli:context' or tag.name =='context':
+
+
 
             # This section of code finds the start date of the context if it exists.
             start_date_tag = tag.find(name='xbrli:startdate') or tag.find(name='period')
