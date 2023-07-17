@@ -29,14 +29,14 @@ format_url = base_url.format(cik, type, dateb)
 # use requests .get method
 edgar_resp = requests.get(base_url.format(cik, type, dateb), headers=headers_txt)
 edgar_str = edgar_resp.text
-print(f'BASE URL : {format_url}')
-print(f'EDGAR STR URL : {edgar_str}')
+# print(f'BASE URL : {format_url}')
+# print(f'EDGAR STR URL : {edgar_str}')
 doc_link = ''
 soup = BeautifulSoup(edgar_str, 'html.parser')
 table_tag = soup.find('table', class_='tableFile2')
 rows = table_tag.find_all('tr')
 
-print(table_tag)
+# print(table_tag)
 print ("done")
 
 doc_link_list = []
@@ -89,6 +89,10 @@ for i in doc_link_list:
     soup = BeautifulSoup(xbrl_str, 'lxml')
     tag_list = soup.find_all(name='xbrli:context')
 
+    # print(xbrl_str)
+    # json = json.loads(xbrl_str)
+    # print(json)
+
 # This section of code creates a context table.
 # The context table is a dictionary of context names keys that reference dictionary values
 # containing date information for each context. For contexts with datetype of 'period' the table
@@ -109,7 +113,16 @@ for i in doc_link_list:
         jsonstr = xmltojson.parse(html)
     # jsonstr = xmltojson.parse(tag_list)
 
-    print(jsonstr)
+    accessionNumber = i.split('/')[7]
+    # print(accessionNumber[7])
+
+    with open("JSONFile" + accessionNumber + ".json", "w") as json_file:
+        json_file.write(jsonstr)
+
+    print('created: JSONFile' + accessionNumber + '.json')
+
+
+    # print(jsonstr)
 
     for tag in tag_list:
         if 'xbrli' in tag.name or 'context' in tag.name:
@@ -149,7 +162,7 @@ for i in doc_link_list:
                 try:
                     contexts[tag.attrs['id']] = dtinfo;
                     tag_attrs_id=tag.attrs['id'];
-                    print(f'tag_attrs[id] : {tag_attrs_id}')
+                    # print(f'tag_attrs[id] : {tag_attrs_id}')
                 except KeyError:
                     pass
                 except NameError:
@@ -163,9 +176,9 @@ for i in doc_link_list:
             try:
                 year = contexts[tag.attrs['contextref']]['year']
                 contextref_txt=tag.attrs['contextref']
-                print(f'tag_attrs[contextref] : {contextref_txt}')
+                # print(f'tag_attrs[contextref] : {contextref_txt}')
                 context_out=contexts[tag.attrs['contextref']]
-                print(f'contexts[tag.attrs[contextref] : {context_out}')
-                print(year + " Stockholder's equity: " + tag.text)
+                # print(f'contexts[tag.attrs[contextref] : {context_out}')
+                # print(year + " Stockholder's equity: " + tag.text)
             except KeyError:
                 pass
