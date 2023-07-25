@@ -18,10 +18,38 @@ headers_txt = {
     "Host" : Host
 }
 
+# URLList = ['https://www.sec.gov/Archives/edgar/data/1730984/000173098423000064/0001730984-23-000064-index.htm',
+#            'https://www.sec.gov/Archives/edgar/data/6207/000141057823001494/0001410578-23-001494-index.htm',
+#            'https://www.sec.gov/Archives/edgar/data/1117228/000149315223025495/0001493152-23-025495-index.htm',
+#            'https://www.sec.gov/Archives/edgar/data/16160/000156276223000287/0001562762-23-000287-index.htm',
+#            'https://www.sec.gov/Archives/edgar/data/1862993/000110465923083813/0001104659-23-083813-index.htm',
+#            'https://www.sec.gov/Archives/edgar/data/1679273/000155837023012203/0001558370-23-012203-index.htm',
+#            'https://www.sec.gov/Archives/edgar/data/1852016/000119312523193294/0001193125-23-193294-index.htm',
+#            'https://www.sec.gov/Archives/edgar/data/1084765/000108476523000016/0001084765-23-000016-index.htm',
+#            'https://www.sec.gov/Archives/edgar/data/771856/000162828023025464/0001628280-23-025464-index.htm',
+#            'https://www.sec.gov/Archives/edgar/data/1339005/000114036123035663/0001140361-23-035663-index.htm',
+#            'https://www.sec.gov/Archives/edgar/data/1892747/000149315223025239/0001493152-23-025239-index.htm',
+#            'https://www.sec.gov/Archives/edgar/data/866729/000086672923000019/0000866729-23-000019-index.htm',
+#            'https://www.sec.gov/Archives/edgar/data/940944/000094094423000037/0000940944-23-000037-index.htm',
+#            'https://www.sec.gov/Archives/edgar/data/1622996/000164033423001347/0001640334-23-001347-index.htm',
+#            'https://www.sec.gov/Archives/edgar/data/915358/000091535823000008/0000915358-23-000008-index.htm']
+#
+#
+# for url in URLList:
+
+# return the cik from the URL
+FedURL = url
+cik = FedURL.split('/')[6]
+# print(URL)
+
 # details on issuer, file type and date of document.
-cik = '0000051143' # cik for International business machines corp (IBM)
-type = '10-K' # annual filing
-dateb = '20231231' # 2016
+# cik = '' # cik for International business machines corp (IBM)
+type = '10-k' # annual filing
+dateb = '' # 2016
+
+# cik = '0000051143' # cik for International business machines corp (IBM)
+# type = '10-K' # annual filing
+# dateb = '20231231' # 2016
 
 # base URL for company filings search
 base_url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={}&type={}&dateb={}"
@@ -51,6 +79,7 @@ for row in rows :
 print(doc_link_list)
 
 # filingURL = 'https://www.sec.gov/Archives/edgar/data/1730346/000173034623000030/0001730346-23-000030-index.htm'
+#              https://www.sec.gov/Archives/edgar/data/1886591/000119312523193225/0001193125-23-193225-index.htm
 # doc_link = filingURL
 
 # Exit if document link couldn't be found
@@ -68,8 +97,14 @@ for i in doc_link_list:
     # Find the XBRL link
     xbrl_link = ''
     soup = BeautifulSoup(doc_str, 'html.parser')
-    table_tag = soup.find('table', class_='tableFile', summary='Data Files')
-    rows = table_tag.find_all('tr')
+    # skip the processing if the company has not filed the xbrl data files
+    if soup.find('table', class_='tableFile', summary='Data Files') != None:
+        table_tag = soup.find('table', class_='tableFile', summary='Data Files')
+        rows = table_tag.find_all('tr')
+    else:
+        print('Passing: ' + i)
+        pass
+
     for row in rows :
         cells = row.find_all('td')
         if len(cells) > 3:
@@ -87,7 +122,12 @@ for i in doc_link_list:
 
     # Find and print stockholder's equity
     soup = BeautifulSoup(xbrl_str, 'lxml')
-    tag_list = soup.find_all(name='xbrli:context')
+    if soup.find_all(name='xbrli:context').__len__() > 0:
+        # process context tags pre-2016
+        tag_list = soup.find_all(name='xbrli:context')
+    else:
+        # process context tags 2016 and greater
+        tag_list = soup.find_all(name='context')
 
     # print(xbrl_str)
     # json = json.loads(xbrl_str)
@@ -101,6 +141,7 @@ for i in doc_link_list:
 # For contexts with datetype of period, the date is equal to the enddate of the context.
 
     contexts = {}
+    # Concatenate json with root tag to
     tag_list_root = '<root>' + str(tag_list) + '</root>'
 
 
