@@ -87,6 +87,7 @@ if doc_link == '' :
     print("Couldn't find the document link")
     sys.exit()
 
+
 for i in doc_link_list:
 
     # Obtain HTML for document page
