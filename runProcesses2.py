@@ -91,6 +91,7 @@ def get_xbrlList():
         else:
             print('There are None')
     print(xbrlList)
+    # Returns multiple URLs in a list of all of the most recent 10-k filings
     return xbrlList
 # End of function to return the xbrlList for current day.
 # Function to create the JSON files in order to store the context
@@ -129,7 +130,7 @@ def retrieve_fileurls():
     # for url in URLList:
 
     # return the cik from the URL
-    FedURL = 'https://www.sec.gov/Archives/edgar/data/1730984/000173098423000064/0001730984-23-000064-index.htm'
+    FedURL = url # 'https://www.sec.gov/Archives/edgar/data/1730984/000173098423000064/0001730984-23-000064-index.htm'
     # FedURL = url
     cik = FedURL.split('/')[6]
     # print(URL)
@@ -202,7 +203,8 @@ def retrieve_fileurls():
             print('Passing: ' + i)
             pass
 
-        filedict = {"Instance_Document_Link": [], "Schema_Document_Link": [], "Calculation_Document_Link": [], "Definition_Document_Link": [], "Label_Document_Link": [], "Presentation_Document_Link": [], }
+        filedict = {"Instance_Document_Link": [], "Schema_Document_Link": [], "Calculation_Document_Link": [],
+                    "Definition_Document_Link": [], "Label_Document_Link": [], "Presentation_Document_Link": [], }
 
         for row in rows:
             cells = row.find_all('td')
@@ -356,8 +358,9 @@ def create_ins_json(filedict):
 xbrlList = get_xbrlList()
 
 for url in xbrlList:
-    retrieve_fileurls()
+    fileDicts = retrieve_fileurls()
+    for filing in fileDicts:
     # filedict = retrieve_fileurls()
     # ins_link = retrieve_fileurls().get('Instance_Document_Link')
-    create_ins_json(retrieve_fileurls().get('Instance_Document_Link'))
+        create_ins_json(fileDicts.get('Instance_Document_Link'))
 
