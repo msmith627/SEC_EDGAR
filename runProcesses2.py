@@ -288,10 +288,10 @@ def create_ins_json(filedict):
     accessionNumber = ins_link[0].split('/')[7]
     # print(accessionNumber[7])
 
-    with open("JSONFile" + accessionNumber + ".json", "w") as json_file:
+    with open("JSONInsFile" + accessionNumber + ".json", "w") as json_file:
         json_file.write(jsonstr)
 
-    print('created: JSONFile' + accessionNumber + '.json')
+    print('created: JSONInsFile' + accessionNumber + '.json')
 
     # print(jsonstr)
 
@@ -360,7 +360,4 @@ xbrlList = get_xbrlList()
 for url in xbrlList:
     fileDicts = retrieve_fileurls()
     for filing in fileDicts:
-    # filedict = retrieve_fileurls()
-    # ins_link = retrieve_fileurls().get('Instance_Document_Link')
         create_ins_json(fileDicts.get('Instance_Document_Link'))
-
