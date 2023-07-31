@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import xml.etree.ElementTree as ET
 import json
 import xmltojson
+import pandas as pd
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -93,16 +94,26 @@ for element in elements:
                     elementDict["element"] = content.attrs['xlink:href'].split('_')[1]
                     # print(elementDict)
 
+                    #Attempting to place this outside of the try in order to clear out the elementDict so I do not get duplicative elements.
+                    # json_stuff = json.dumps(elementDict, indent=4)
 
-                    json_stuff = json.dumps(elementDict, indent=4)
+
                     # print(json_object)
                 except KeyError:
                     pass
+
+                json_stuff = json.dumps(elementDict, indent=4)
                 #json_str.append(json_stuff)
+                # elementDict = {}
+
                 json_lib.append(json_stuff)
-print(json_lib)
+
+# print(json_lib)
 #enable after figuring out how to put all of the json dictionaries together.
-json_lib_str = '<root>' + str(json_lib) + '</root>'
+#de-dup list
+json_lib_dedup = pd.Series(json_lib).drop_duplicates().to_list()
+json_lib_str = '<root>' + str(json_lib_dedup) + '</root>'
+print(json_lib_str)
 # Encode/Serialize the JSON
 with open("Contexts.html", "w") as html_file:
     html_file.write(str(json_lib_str))
