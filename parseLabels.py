@@ -58,9 +58,10 @@ linklocs = souppres.find_all('link:presentationLink')
 elements = souppres.find_all()
 #elements = souppres.find_all(attrs={'xlink:label':True})
 
-elementDict = {}
+# elementDict = {}
 label = ''
-accessionNumber = responsepres.url.split('/')[6]
+accessionNumber = responsepres.url.split('/')[7]
+cik = responsepres.url.split('/')[6]
 json_lib = []
 
 # print(elements.tag.name)
@@ -80,6 +81,8 @@ for element in elements:
 
         for content in content_list:
             json_str = []
+            json_stuff = {}
+            elementDict = {}
             if content != '''\n''':
                 # json_str = []
                 # print('hello')
@@ -89,9 +92,10 @@ for element in elements:
                     # splitting on the '_' in examples like: 'https://xbrl.sec.gov/dei/2022/dei-2022.xsd#dei_DocumentRegistrationStatement'
                     # in order to get the actual metric name to be used in subsequent tasks only pulling the name from the array
                     # print(content.attrs['xlink:href'].split('_')[1])
-                    elementDict["cik_number"] = responsepres.url.split('/')[6]
-                    elementDict["section"] = element.attrs['xlink:title']
-                    elementDict["element"] = content.attrs['xlink:href'].split('_')[1]
+                    elementDict["cik_number"] = cik
+                    elementDict["accession_number"] = accessionNumber
+                    elementDict["section"] = element.attrs["xlink:title"].replace('\'', '')
+                    elementDict["element"] = content.attrs["xlink:href"].split('_')[1]
                     # print(elementDict)
 
                     #Attempting to place this outside of the try in order to clear out the elementDict so I do not get duplicative elements.
@@ -102,7 +106,9 @@ for element in elements:
                 except KeyError:
                     pass
 
-                json_stuff = json.dumps(elementDict, indent=4)
+                json_stuff = elementDict
+                #json_stuff = json.dumps(elementDict, indent=4)
+                # print(json_stuff)
                 #json_str.append(json_stuff)
                 # elementDict = {}
 
@@ -111,25 +117,50 @@ for element in elements:
 # print(json_lib)
 #enable after figuring out how to put all of the json dictionaries together.
 #de-dup list
-json_lib_dedup = pd.Series(json_lib).drop_duplicates().to_list()
-json_lib_str = '<root>' + str(json_lib_dedup) + '</root>'
-print(json_lib_str)
+print(json_lib)
+json_lib_str = '{root: ' + str(json_lib) + '}'
+# json_stuff = json.dumps(json_lib, indent=4)
+# json_lib_str_fmt = pd.Series(json_stuff).drop_duplicates().to_list()
+# jsonArray = []
+# jsonArray = jsonArray[json_lib_str_fmt]
+# print(json_lib_str_fmt)
 # Encode/Serialize the JSON
-with open("Contexts.html", "w") as html_file:
-    html_file.write(str(json_lib_str))
+# with open("sample.json", "w") as outfile:
+#     json.dumps()
 
-with open("Contexts.html", "r") as html_file:
-    html = html_file.read()
-    jsonstr = xmltojson.parse(html)
+with open("JSONLabFile" + accessionNumber + ".json", "w") as json_file:
+    json_stuff = json.dump(json_lib, json_file)
+
+json_str = json.dumps(json_lib)
+
+
+# with open("Labels.json", "w") as json_file:
+#     json_stuff = json.dump(json_lib, json_file, indent=4)
+#
+# json_str1 = json.dumps(json_lib)
+
+with open('JSONLabFile' + accessionNumber + '.json') as json_file:
+    json = json_file.read()
+    jsonstr = json
+
+# with open("Labels.html", "w",) as html_file:
+#     html_file.write(str(json_lib_str_fmt))
+#
+# with open("Labels.html", "r") as html_file:
+#     html = html_file.read()
+#     jsonstr = html
+    # jsonstr = xmltojson.parse(html) # .replace('\'', '\"')
 # jsonstr = xmltojson.parse(tag_list)
 
 # accessionNumber = i.split('/')[7]
-# print(accessionNumber[7])
+print(jsonstr)
 
-with open("JSONLabFile" + accessionNumber + ".json", "w") as json_file:
-    json_file.write(jsonstr)
+# with open("JSONLabFile" + accessionNumber + ".json", "w") as json_file:
+#     json_file.write(jsonstr)
 
 print('created: JSONLabFile' + accessionNumber + '.json')
+
+
 
             #print('___' * 20)
                 # print(label)
