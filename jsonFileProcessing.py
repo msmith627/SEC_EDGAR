@@ -31,8 +31,8 @@ def process_json_files(directory_path):
 
 
     # Create an sqlalchemy engine for SQL Server
-    conn = f'mssql+pyodbc://{username}:{password}@{server}/{database}?driver=ODBC+Driver+17+for+SQL+Server'
-    engine = create_engine(conn)
+    # conn = f'mssql+pyodbc://{username}:{password}@{server}/{database}?driver=ODBC+Driver+17+for+SQL+Server'
+    # engine = create_engine(conn)
 
     # # Create a connection to SQL Server
     # conn_str = f'DRIVER={{SQL Server}};SERVER={server};DATABASE={database};UID={username};PWD={password}'
@@ -108,10 +108,10 @@ def process_json_files(directory_path):
                 print(f"Error: {e}")
 
     # Close the connection
-    conn.close()
+    # conn.close()
 
 # Your JSON files directory path
-json_files_directory = r'C:\Users\Marcu\PycharmProjects\SEC_EDGAR'
+json_files_directory = r'C:\Users\smithm7\PyRepo\SEC_EDGAR\sec_edgar'
 
 # Process JSON files and insert data into SQL Server
 process_json_files(json_files_directory)
