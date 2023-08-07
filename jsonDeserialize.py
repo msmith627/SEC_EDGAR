@@ -3,7 +3,7 @@ import json
 
 # Function to read and deserialize the JSON file
 def read_json_file(filename):
-    with open(r'C:\Users\marcu\PycharmProjects\sec_edgar\JSONFile000104746915001106.json', 'r') as file:
+    with open(r'C:\Users\smithm7\PyRepo\SEC_EDGAR\sec_edgar\JSONFile000114420419014741.json', 'r') as file:
         data = json.load(file)
     return data
 
@@ -26,19 +26,19 @@ for context in contexts:
     if 'xbrli:startdate' in period_data:  # Date range context
         start_date = period_data['xbrli:startdate']
         end_date = period_data['xbrli:enddate']
-        print("Context ID:", context_id)
-        print("Entity Identifier:", entity_identifier)
-        print("Start Date:", start_date)
-        print("End Date:", end_date)
+        # print("Context ID:", context_id)
+        # print("Entity Identifier:", entity_identifier)
+        # print("Start Date:", start_date)
+        # print("End Date:", end_date)
     elif 'xbrli:instant' in period_data:  # Instant context
         instant_date = period_data['xbrli:instant']
-        print("Context ID:", context_id)
-        print("Entity Identifier:", entity_identifier)
-        print("Instant Date:", instant_date)
+        # print("Context ID:", context_id)
+        # print("Entity Identifier:", entity_identifier)
+        # print("Instant Date:", instant_date)
     else:
         print("Invalid context format!")
 
-    print("--------")
+    # print("--------")
 
 # Lists to store data for DataFrame
 context_ids = []
