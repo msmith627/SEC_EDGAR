@@ -275,10 +275,10 @@ def create_ins_json(filedict):
     tag_list_root = '<root>' + str(tag_list) + '</root>'
 
     #
-    with open("Contexts.html", "w") as html_file:
+    with open("ContextsIns.html", "w") as html_file:
         html_file.write(str(tag_list_root))
 
-    with open("Contexts.html", "r") as html_file:
+    with open("ContextsIns.html", "r") as html_file:
         html = html_file.read()
         jsonstr = xmltojson.parse(html)
     # jsonstr = xmltojson.parse(tag_list)
@@ -352,7 +352,70 @@ def create_ins_json(filedict):
             except KeyError:
                 pass
 
+def create_lab_json(filedict):
+    # define headers
+    headers = {
+        'user-agent': 'self m_smith627@hotmail.com'
+    }
 
+    url = filedict
+
+    responsepres = requests.get(
+        url=url, headers=headers)
+
+    # print(links)
+
+    souppres = BeautifulSoup(responsepres.content, 'xml')
+    # linklocs = souppres.'link:presentationLink'
+    linklocs = souppres.find_all('link:presentationLink')
+
+    # Find all elements with the xlink:labels attribute
+    elements = souppres.find_all()
+
+    # elementDict = {}
+    label = ''
+    accessionNumber = responsepres.url.split('/')[7]
+    cik = responsepres.url.split('/')[6]
+    json_lib = []
+
+    # print(elements.tag.name)
+    for element in elements:
+        if element.name == 'presentationLink':
+            content_list = element.contents
+
+            for content in content_list:
+                json_str = []
+                json_stuff = {}
+                elementDict = {}
+                if content != '''\n''':
+                    try:
+                        elementDict["cik_number"] = cik
+                        elementDict["accession_number"] = accessionNumber
+                        elementDict["section"] = element.attrs["xlink:title"].replace('\'', '')
+                        elementDict["element"] = content.attrs["xlink:href"].split('_')[1]
+                    except KeyError:
+                        pass
+
+                    json_stuff = elementDict
+
+                    json_lib.append(json_stuff)
+
+    print(json_lib)
+    json_lib_str = '{root: ' + str(json_lib) + '}'
+
+    with open("JSONLabFile" + accessionNumber + ".json", "w") as json_file:
+        json_stuff = json.dump(json_lib, json_file)
+
+    json_str = json.dumps(json_lib)
+
+    with open('JSONLabFile' + accessionNumber + '.json') as json_file:
+        json_st = json_file.read()
+        jsonstr = json_st
+
+    print(jsonstr)
+
+
+    print('created: JSONLabFile' + accessionNumber + '.json')
 
 #Parent run of the functions
 xbrlList = get_xbrlList()
@@ -361,3 +424,4 @@ for url in xbrlList:
     fileDicts = retrieve_fileurls()
     for filing in fileDicts:
         create_ins_json(fileDicts.get('Instance_Document_Link'))
+        create_lab_json(fileDicts.get('Label_Document_Link'))
