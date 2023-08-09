@@ -45,7 +45,7 @@ def get_xbrlList():
     # print(url)
 
     #response = requests.get(url='https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent',headers=headers_txt, params=params)
-    response = requests.get(url=url,headers=headers_txt, params=params)
+    response = requests.get(url=url, headers=headers_txt, params=params)
 
 
     html = response.text
@@ -164,6 +164,9 @@ def retrieve_fileurls():
 
     for row in rows:
         cells = row.find_all('td')
+        # if row[1][0] == '10-K':
+        #     cells = row.find_all('td')
+        #     pass
         if len(cells) > 3:
             if cells[3].text > '2015-01-01':
                 # if '10-k' in cells[1].text :
@@ -209,32 +212,32 @@ def retrieve_fileurls():
         for row in rows:
             cells = row.find_all('td')
             if len(cells) > 3:
-                if 'INS' in cells[1].text:
+                if 'INS' in cells[1].text or '.INS' in cells[3]:
                     # Instance docs seem to contain the context of the filings
                     ins_link = 'https://www.sec.gov' + cells[2].a['href']
                     filedict["Instance_Document_Link"].append(ins_link)
                     # print(ins_link)
-                elif 'SCH' in cells[1].text:
+                elif 'SCH' in cells[1].text or '.SCH' in cells[3]:
                     # DO NOT KNOW what schema files contain yet
                     sch_link = 'https://www.sec.gov' + cells[2].a['href']
                     filedict["Schema_Document_Link"].append(sch_link)
                     # print(sch_link)
-                elif 'CAL' in cells[1].text:
+                elif 'CAL' in cells[1].text or '.CAL' in cells[3]:
                     # DO NOT KNOW what calculation files contain yet
                     cal_link = 'https://www.sec.gov' + cells[2].a['href']
                     filedict["Calculation_Document_Link"].append(cal_link)
                     # print(cal_link)
-                elif 'DEF' in cells[1].text:
+                elif 'DEF' in cells[1].text or '.DEF' in cells[3].text:
                     # DO NOT KNOW what definition files contain yet
                     def_link = 'https://www.sec.gov' + cells[2].a['href']
                     filedict["Definition_Document_Link"].append(def_link)
                     # print(def_link)
-                elif 'LAB' in cells[1].text:
+                elif 'LAB' in cells[1].text or '.LAB' in cells[3].text:
                     # DO NOT KNOW what label files contain yet
                     lab_link = 'https://www.sec.gov' + cells[2].a['href']
                     filedict["Label_Document_Link"].append(lab_link)
                     # print(lab_link)
-                elif 'PRE' in cells[1].text:
+                elif 'PRE' in cells[1].text or '.PRE' in cells[3].text:
                     # DO NOT KNOW what presentation files contain yet
                     pre_link = 'https://www.sec.gov' + cells[2].a['href']
                     filedict["Presentation_Document_Link"].append(pre_link)
@@ -358,7 +361,7 @@ def create_lab_json(filedict):
         'user-agent': 'self m_smith627@hotmail.com'
     }
 
-    url = filedict
+    url = filedict[0]
 
     responsepres = requests.get(
         url=url, headers=headers)
@@ -423,5 +426,21 @@ xbrlList = get_xbrlList()
 for url in xbrlList:
     fileDicts = retrieve_fileurls()
     for filing in fileDicts:
-        create_ins_json(fileDicts.get('Instance_Document_Link'))
-        create_lab_json(fileDicts.get('Label_Document_Link'))
+        if filing == 'Instance_Document_Link' and fileDicts['Instance_Document_Link'].__len__() > 0:
+            print("Processing: ", filing)
+            create_ins_json(fileDicts.get('Instance_Document_Link'))
+            print("Finished Processing: ", filing)
+        elif filing == 'Label_Document_Link' and fileDicts['Label_Document_Link'].__len__() > 0:
+            print("Processing: ", filing)
+            create_lab_json(fileDicts.get('Label_Document_Link'))
+            print("Finished Processing: ", filing)
+        elif filing == 'Calculation_Document_Link' and fileDicts['Calculation_Document_Link'].__len__() > 0:
+            print("Processing: ", filing)
+        elif filing == 'Schema_Document_Link' and fileDicts['Schema_Document_Link'].__len__() > 0:
+            print("Processing: ", filing)
+        elif filing == 'Definition_Document_Link' and fileDicts['Definition_Document_Link'].__len__() > 0:
+            print("Processing: ", filing)
+        elif filing == 'Presentation_Document_Link' and fileDicts['Presentation_Document_Link'].__len__() > 0:
+            print("Processing: ", filing)
+        else:
+            print("What is: ", filing)
