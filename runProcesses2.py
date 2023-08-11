@@ -161,6 +161,7 @@ def retrieve_fileurls():
     # print("done")
 
     doc_link_list = []
+    fileDictList = []
 
     for row in rows:
         cells = row.find_all('td')
@@ -182,9 +183,8 @@ def retrieve_fileurls():
     if doc_link == '':
         print("Couldn't find the document link")
         sys.exit()
-
     for i in doc_link_list:
-
+        # fileDictList = []
         # Obtain HTML for document page
         print(f'DOC Link : {i}')
         doc_resp = requests.get(i, headers=headers_txt)
@@ -242,8 +242,9 @@ def retrieve_fileurls():
                     pre_link = 'https://www.sec.gov' + cells[2].a['href']
                     filedict["Presentation_Document_Link"].append(pre_link)
                     # print(pre_link)
-        print(filedict)
-    return filedict
+        fileDictList.append(filedict)
+        print(fileDictList)
+    return fileDictList
 
 def create_ins_json(filedict):
 
