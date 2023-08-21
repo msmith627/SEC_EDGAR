@@ -1,4 +1,5 @@
 import requests
+import js2py
 
 
 # set header parameters required by sec request
@@ -30,5 +31,7 @@ url = baseURL + extension
 
 apicall = requests.get(url=url, headers=headers_txt)
 
-
-print(apicall.text)
+# f = js2py.eval_js(apicall.text)
+f = apicall.text# .find()
+# find the script and use the eval_js on that.
+print(f)
